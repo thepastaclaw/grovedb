@@ -1071,10 +1071,16 @@ fn test_generate_for_query_rejects_subquery() {
     query.set_subquery(Query::new());
 
     let result = DenseTreeProof::generate_for_query(&tree, &query);
-    assert!(
-        result.unwrap().is_err(),
-        "subqueries should be rejected for dense-tree query proofs"
-    );
+    match result.unwrap() {
+        Err(DenseMerkleError::InvalidProof(msg)) => {
+            assert!(
+                msg.contains("subqueries are not supported"),
+                "expected subquery rejection message, got: {msg}"
+            );
+        }
+        Err(other) => panic!("expected InvalidProof for subquery, got: {other}"),
+        Ok(_) => panic!("subqueries should be rejected for dense-tree query proofs"),
+    }
 }
 
 #[test]
@@ -1090,9 +1096,16 @@ fn test_verify_for_query_rejects_subquery() {
     verify_query.insert_key(vec![4]);
     verify_query.set_subquery(Query::new());
 
-    let result = proof.verify_for_query::<Vec<(u16, Vec<u8>)>>(&verify_query, tree.height(), 7);
-    assert!(
-        result.is_err(),
-        "verify_for_query should reject queries with subqueries"
-    );
+    let result =
+        proof.verify_for_query::<Vec<(u16, Vec<u8>)>>(&verify_query, tree.height(), tree.count());
+    match result {
+        Err(DenseMerkleError::InvalidProof(msg)) => {
+            assert!(
+                msg.contains("subqueries are not supported"),
+                "expected subquery rejection message, got: {msg}"
+            );
+        }
+        Err(other) => panic!("expected InvalidProof for subquery, got: {other}"),
+        Ok(_) => panic!("verify_for_query should reject queries with subqueries"),
+    }
 }
