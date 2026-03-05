@@ -125,18 +125,6 @@ pub(crate) fn query_to_positions(query: &Query, count: u16) -> Result<Vec<u16>, 
 #[cfg(all(test, feature = "storage"))]
 mod tests;
 
-/// Unwrap a `CostResult`, accumulate its cost into `$cost`, and return early
-/// (with accumulated cost) on error.
-#[cfg(feature = "storage")]
-macro_rules! cost_return_on_error {
-    ($cost:ident, $expr:expr) => {
-        match $expr.unwrap_add_cost(&mut $cost) {
-            Ok(x) => x,
-            Err(e) => return Err(e).wrap_with_cost($cost),
-        }
-    };
-}
-
 /// An inclusion proof for one or more positions in a dense fixed-sized Merkle
 /// tree.
 ///

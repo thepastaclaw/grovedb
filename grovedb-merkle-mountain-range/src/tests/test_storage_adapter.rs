@@ -610,8 +610,8 @@ fn mmr_store_read_key_overflow_with_u32() {
     let store = MmrStore::with_key_size(&ctx, MmrKeySize::U32);
     let store_ref: &MmrStore<'_, _> = &store;
 
-    // Position exceeding u32::MAX should trigger key error
-    let pos = crate::helper::MAX_U32_MMR_POSITION + 1;
+    // Position at or exceeding MAX_U32_MMR_POSITION (2^31) should trigger key error
+    let pos = crate::helper::MAX_U32_MMR_POSITION;
     let result = MMRStoreReadOps::element_at_position(&store_ref, pos);
     assert!(result.value.is_err(), "should error on key overflow");
 }
@@ -622,7 +622,8 @@ fn mmr_store_write_key_overflow_with_u32() {
     let store = MmrStore::with_key_size(&ctx, MmrKeySize::U32);
     let mut store_ref: &MmrStore<'_, _> = &store;
 
-    let pos = crate::helper::MAX_U32_MMR_POSITION + 1;
+    // Position at or exceeding MAX_U32_MMR_POSITION (2^31) should trigger key error
+    let pos = crate::helper::MAX_U32_MMR_POSITION;
     let leaf = MmrNode::leaf(b"overflow".to_vec());
     let result = MMRStoreWriteOps::append(&mut store_ref, pos, vec![leaf]);
     assert!(result.value.is_err(), "should error on key overflow");

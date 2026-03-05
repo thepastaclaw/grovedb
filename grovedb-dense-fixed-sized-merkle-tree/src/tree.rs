@@ -9,18 +9,6 @@ use crate::{
     DenseMerkleError,
 };
 
-/// Unwrap a `CostResult`, accumulate its cost into `$cost`, and return early
-/// (with accumulated cost) on error.
-#[cfg(feature = "storage")]
-macro_rules! cost_return_on_error {
-    ($cost:ident, $expr:expr) => {
-        match $expr.unwrap_add_cost(&mut $cost) {
-            Ok(x) => x,
-            Err(e) => return Err(e).wrap_with_cost($cost),
-        }
-    };
-}
-
 /// Encode a position as a big-endian 2-byte key for storage.
 pub fn position_key(pos: u16) -> [u8; 2] {
     pos.to_be_bytes()
