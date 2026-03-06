@@ -2321,4 +2321,78 @@ mod tests {
             .unwrap();
         assert!(matches!(result, Err(Error::InvalidInput(..))));
     }
+
+    #[test]
+    fn insert_if_not_exists_accepts_255_byte_key() {
+        let grove_version = GroveVersion::latest();
+        let db = make_test_grovedb(grove_version);
+        let key = vec![0xAA; 255];
+        let inserted = db
+            .insert_if_not_exists(
+                [TEST_LEAF].as_ref(),
+                &key,
+                Element::new_item(b"val".to_vec()),
+                None,
+                grove_version,
+            )
+            .unwrap()
+            .expect("255-byte key should be accepted");
+        assert!(inserted, "element should have been inserted");
+    }
+
+    #[test]
+    fn insert_if_not_exists_return_existing_element_accepts_255_byte_key() {
+        let grove_version = GroveVersion::latest();
+        let db = make_test_grovedb(grove_version);
+        let key = vec![0xAA; 255];
+        let previous = db
+            .insert_if_not_exists_return_existing_element(
+                [TEST_LEAF].as_ref(),
+                &key,
+                Element::new_item(b"val".to_vec()),
+                None,
+                grove_version,
+            )
+            .unwrap()
+            .expect("255-byte key should be accepted");
+        assert!(
+            previous.is_none(),
+            "no previous element should exist for a fresh key"
+        );
+    }
+
+    #[test]
+    fn insert_if_not_exists_return_existing_element_rejects_256_byte_key() {
+        let grove_version = GroveVersion::latest();
+        let db = make_test_grovedb(grove_version);
+        let key = vec![0xBB; 256];
+        let result = db
+            .insert_if_not_exists_return_existing_element(
+                [TEST_LEAF].as_ref(),
+                &key,
+                Element::new_item(b"val".to_vec()),
+                None,
+                grove_version,
+            )
+            .unwrap();
+        assert!(matches!(result, Err(Error::InvalidInput(..))));
+    }
+
+    #[test]
+    fn insert_if_changed_value_accepts_255_byte_key() {
+        let grove_version = GroveVersion::latest();
+        let db = make_test_grovedb(grove_version);
+        let key = vec![0xAA; 255];
+        let (changed, _previous) = db
+            .insert_if_changed_value(
+                [TEST_LEAF].as_ref(),
+                &key,
+                Element::new_item(b"val".to_vec()),
+                None,
+                grove_version,
+            )
+            .unwrap()
+            .expect("255-byte key should be accepted");
+        assert!(changed, "element should have been inserted as changed");
+    }
 }
